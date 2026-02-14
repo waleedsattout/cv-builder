@@ -1,0 +1,173 @@
+<div class="app-container">
+  <!-- Form Section -->
+  <div class="form-container">
+    <h2>املأ بياناتك</h2>
+    <form id="cv-form">
+      <div class="form-group">
+        <label for="name">الاسم الكامل</label>
+        <input type="text" id="name" name="name" placeholder="أدخل اسمك الكامل" [(ngModel)]="cvData.personalInfo.fullName">
+      </div>
+      <div class="form-group">
+        <label for="phone">رقم الهاتف</label>
+        <input type="tel" id="phone" name="phone" placeholder="+963 9xx xxx xxx" [(ngModel)]="cvData.personalInfo.phone">
+      </div>
+      <div class="form-group">
+        <label for="email">البريد الإلكتروني</label>
+        <input type="email" id="email" name="email" placeholder="example@email.com" [(ngModel)]="cvData.personalInfo.email">
+      </div>
+      <div class="form-group">
+        <label for="address">العنوان</label>
+        <input type="text" id="address" name="address" placeholder="أدخل عنوانك" [(ngModel)]="cvData.personalInfo.address">
+      </div>
+
+      <div class="form-group">
+        <label for="summary">الملخص المهني</label>
+        <textarea id="summary" name="summary" placeholder="اكتب ملخصًا مهنيًا عن نفسك..." [(ngModel)]="cvData.summary"></textarea>
+      </div>
+
+      <!-- Dynamic Experience Section -->
+      <div class="dynamic-section" id="experiences-form-section" draggable="true">
+        <h3>الخبرات العملية <span class="form-drag-handle">⋮⋮</span></h3>
+        <div id="experiences-container">
+          @for (exp of cvData.experience; track exp.id; let i = $index) {
+            <div class="dynamic-entry">
+              <button type="button" class="btn btn-danger" (click)="removeExperience(i)">حذف</button>
+              <div class="form-group">
+                <label>المسمى الوظيفي</label>
+                <input type="text" class="exp-title" name="exp-title-{{i}}" placeholder="مثال: موظف إداري" [(ngModel)]="exp.jobTitle">
+              </div>
+              <div class="form-group">
+                <label>جهة العمل والفترة</label>
+                <input type="text" class="exp-place" name="exp-place-{{i}}" placeholder="مثال: شركة ABC | يناير 2020 - حتى الآن" [(ngModel)]="exp.company">
+              </div>
+              <div class="form-group">
+                <label>الوصف (كل نقطة في سطر جديد)</label>
+                <textarea class="exp-desc" name="exp-desc-{{i}}" placeholder="اكتب وصفًا للوظيفة..." [(ngModel)]="exp.description"></textarea>
+              </div>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn btn-success" (click)="addExperience()">+ إضافة خبرة جديدة</button>
+      </div>
+
+      <!-- Dynamic Education Section -->
+      <div class="dynamic-section" id="education-form-section" draggable="true">
+        <h3>التعليم <span class="form-drag-handle">⋮⋮</span></h3>
+        <div id="education-container">
+          @for (edu of cvData.education; track edu.id; let i = $index) {
+            <div class="dynamic-entry">
+              <button type="button" class="btn btn-danger" (click)="removeEducation(i)">حذف</button>
+              <div class="form-group">
+                <label>المؤسسة التعليمية والمؤهل</label>
+                <textarea class="edu-details" name="edu-details-{{i}}" placeholder="مثال: جامعة دمشق
+المؤهل: بكالوريوس" [(ngModel)]="edu.degree"></textarea>
+              </div>
+              <div class="form-group">
+                <label>الفترة الزمنية</label>
+                <input type="text" class="edu-period" name="edu-period-{{i}}" placeholder="مثال: 2015 - 2019" [(ngModel)]="edu.graduationDate">
+              </div>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn btn-success" (click)="addEducation()">+ إضافة مرحلة تعليمية</button>
+      </div>
+
+      <!-- Dynamic Skills Section -->
+      <div class="dynamic-section" id="skills-form-section" draggable="true">
+        <h3>المهارات <span class="form-drag-handle">⋮⋮</span></h3>
+        <div id="skills-container">
+          @for (skill of cvData.skills; track $index; let i = $index) {
+            <div class="dynamic-entry">
+              <button type="button" class="btn btn-danger" (click)="removeSkill(i)">حذف</button>
+              <div class="form-group">
+                <label>المهارة</label>
+                <input type="text" class="skill-item" name="skill-item-{{i}}" placeholder="مثال: مهارات الكمبيوتر" [(ngModel)]="cvData.skills[i]">
+              </div>
+            </div>
+          }
+        </div>
+        <button type="button" class="btn btn-success" (click)="addSkill()">+ إضافة مهارة</button>
+      </div>
+
+      <button type="submit" class="btn btn-primary" (click)="generateCV()">إنشاء ومعاينة السيرة الذاتية</button>
+      <button type="button" id="print-btn" class="btn btn-print" (click)="printCV()">طباعة السيرة الذاتية</button>
+    </form>
+  </div>
+
+  <!-- Preview Section -->
+  <div class="preview-container">
+    <div class="placeholder-message">
+      املأ بياناتك واضغط على زر "إنشاء ومعاينة السيرة الذاتية" لرؤية النتيجة هنا.
+    </div>
+
+    <!-- Hidden CV Template -->
+    <div id="cv-template" class="cv-template">
+      <div class="cv-container">
+        <aside class="sidebar drop-zone" id="sidebar-drop-zone"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onPreviewDrop($event, 'sidebar')">
+          <header class="profile-header">
+            <h1 id="cv-name">{{ cvData.personalInfo.fullName }}</h1>
+          </header>
+          <section id="preview-contact" class="draggable-section" draggable="true"
+            (dragstart)="onPreviewDragStart($event, 'contact')"
+            (dragend)="onPreviewDragEnd($event)">
+            <h2>معلومات التواصل <span class="cv-drag-handle">⋮⋮</span></h2>
+            <p id="cv-phone"><strong>هاتف</strong> {{ cvData.personalInfo.phone }}</p>
+            <p id="cv-email"><strong>بريد إلكتروني</strong> {{ cvData.personalInfo.email }}</p>
+            <p id="cv-address"><strong>عنوان</strong> {{ cvData.personalInfo.address }}</p>
+          </section>
+          <section id="preview-education" class="draggable-section" draggable="true"
+            (dragstart)="onPreviewDragStart($event, 'education')"
+            (dragend)="onPreviewDragEnd($event)">
+            <h2>التعليم <span class="cv-drag-handle">⋮⋮</span></h2>
+            <div id="cv-education-list">
+              @for (edu of cvData.education; track edu.id) {
+                <div class="education-item">
+                  <p>{{ edu.degree }}</p>
+                  <p class="job-meta">{{ edu.graduationDate }}</p>
+                </div>
+              }
+            </div>
+          </section>
+        </aside>
+        <main class="main-content drop-zone" id="main-content-drop-zone"
+          (dragover)="onDragOver($event)"
+          (dragleave)="onDragLeave($event)"
+          (drop)="onPreviewDrop($event, 'main')">
+          <section id="preview-summary" class="summary draggable-section" draggable="true"
+            (dragstart)="onPreviewDragStart($event, 'summary')"
+            (dragend)="onPreviewDragEnd($event)">
+            <h2>الملخص المهني <span class="cv-drag-handle">⋮⋮</span></h2>
+            <p id="cv-summary">{{ cvData.summary }}</p>
+          </section>
+          <section id="preview-experience" class="draggable-section" draggable="true"
+            (dragstart)="onPreviewDragStart($event, 'experience')"
+            (dragend)="onPreviewDragEnd($event)">
+            <h2>الخبرات الوظيفية <span class="cv-drag-handle">⋮⋮</span></h2>
+            <div id="cv-experience-list">
+              @for (exp of cvData.experience; track exp.id) {
+                <div class="experience-item">
+                  <h3>{{ exp.jobTitle }}</h3>
+                  <p class="job-meta">{{ exp.company }}</p>
+                  <p>{{ exp.description }}</p>
+                </div>
+              }
+            </div>
+          </section>
+          <section id="preview-skills" class="draggable-section" draggable="true"
+            (dragstart)="onPreviewDragStart($event, 'skills')"
+            (dragend)="onPreviewDragEnd($event)">
+            <h2>المهارات <span class="cv-drag-handle">⋮⋮</span></h2>
+            <ul id="cv-skills-list" class="skills-list">
+              @for (skill of cvData.skills; track $index) {
+                <li>{{ skill }}</li>
+              }
+            </ul>
+          </section>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
